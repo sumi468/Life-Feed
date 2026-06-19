@@ -186,7 +186,7 @@ function boot() {
   // Register service worker for PWA installability / offline shell.
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/service-worker.js").catch((err) => {
+      navigator.serviceWorker.register("./service-worker.js").catch((err) => {
         console.warn("Service worker registration failed:", err);
       });
     });

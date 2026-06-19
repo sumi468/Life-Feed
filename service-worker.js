@@ -3,24 +3,27 @@
 // as usual (not cached) — this only ensures the static shell loads offline.
 
 const CACHE_NAME = "lifefeed-shell-v1";
+// Paths are relative to the service worker's own scope so this works
+// whether the app is hosted at the domain root or under a subpath
+// (e.g. GitHub Pages: https://user.github.io/lifefeed/).
 const SHELL_ASSETS = [
-  "/index.html",
-  "/styles/reset.css",
-  "/styles/variables.css",
-  "/styles/layout.css",
-  "/styles/components.css",
-  "/styles/animations.css",
-  "/scripts/firebase-config.js",
-  "/scripts/auth.js",
-  "/scripts/app.js",
-  "/scripts/feed.js",
-  "/scripts/log.js",
-  "/scripts/dashboard.js",
-  "/scripts/streak.js",
-  "/scripts/support.js",
-  "/scripts/ui.js",
-  "/data/categories.js",
-  "/manifest.json",
+  "./index.html",
+  "./styles/reset.css",
+  "./styles/variables.css",
+  "./styles/layout.css",
+  "./styles/components.css",
+  "./styles/animations.css",
+  "./scripts/firebase-config.js",
+  "./scripts/auth.js",
+  "./scripts/app.js",
+  "./scripts/feed.js",
+  "./scripts/log.js",
+  "./scripts/dashboard.js",
+  "./scripts/streak.js",
+  "./scripts/support.js",
+  "./scripts/ui.js",
+  "./data/categories.js",
+  "./manifest.json",
 ];
 
 self.addEventListener("install", (event) => {
@@ -59,7 +62,7 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => caches.match("/index.html"));
+        .catch(() => caches.match("./index.html"));
     })
   );
 });
