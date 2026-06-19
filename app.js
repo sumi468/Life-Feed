@@ -2,15 +2,37 @@
 // Application entry point. Wires together auth state, screen routing,
 // and initializes feature modules (feed, log, dashboard, streak, support).
 
-import { onAuthReady, signUp, logIn, logOut, createFamily, joinFamilyByCode, getFamily, AVATAR_ICONS } from "./auth.js";
+import {
+  onAuthReady,
+  signUp,
+  logIn,
+  logOut,
+  signInWithGoogle,
+  resetPassword,
+  updateUserProfile,
+  createFamily,
+  joinFamilyByCode,
+  getFamily,
+  AVATAR_ICONS,
+} from "./auth.js";
 import { startFeedListener, stopFeedListener } from "./feed.js";
 import { initQuickLog } from "./log.js";
 import { renderDashboard } from "./dashboard.js";
 import { renderStreaks } from "./streak.js";
 import { initSupport, stopSupportListener } from "./support.js";
-import { showScreen, showToast, bindGlobalUI, openModal, closeModal, el } from "./ui.js";
+import {
+  showScreen,
+  showToast,
+  bindGlobalUI,
+  openModal,
+  closeModal,
+  el,
+  showLoading,
+  hideLoading,
+} from "./ui.js";
 
 let selectedAvatar = AVATAR_ICONS[0];
+let selectedProfileAvatar = AVATAR_ICONS[0];
 let quickLogInitialized = false;
 
 /* ---------------- Auth screen wiring ---------------- */
@@ -21,9 +43,31 @@ function renderAvatarPicker() {
   picker.innerHTML = "";
   AVATAR_ICONS.forEach((icon) => {
     const btn = el("button", "avatar-option" + (icon === selectedAvatar ? " avatar-option--selected" : ""), icon);
+    btn.type = "button";
     btn.addEventListener("click", () => {
       selectedAvatar = icon;
-      document.querySelectorAll(".avatar-option").forEach((b) => b.classList.remove("avatar-option--selected"));
+      picker.querySelectorAll(".avatar-option").forEach((b) => b.classList.remove("avatar-option--selected"));
+      btn.classList.add("avatar-option--selected");
+    });
+    picker.appendChild(btn);
+  });
+}
+
+function renderProfileAvatarPicker(currentIcon) {
+  const picker = document.getElementById("profileAvatarPicker");
+  if (!picker) return;
+  selectedProfileAvatar = currentIcon || AVATAR_ICONS[0];
+  picker.innerHTML = "";
+  AVATAR_ICONS.forEach((icon) => {
+    const btn = el(
+      "button",
+      "avatar-option" + (icon === selectedProfileAvatar ? " avatar-option--selected" : ""),
+      icon
+    );
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      selectedProfileAvatar = icon;
+      picker.querySelectorAll(".avatar-option").forEach((b) => b.classList.remove("avatar-option--selected"));
       btn.classList.add("avatar-option--selected");
     });
     picker.appendChild(btn);
@@ -49,11 +93,14 @@ function bindAuthForms() {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
+    showLoading();
     try {
       await logIn(email, password);
     } catch (err) {
       showToast("ログインに失敗しました");
       console.error(err);
+    } finally {
+      hideLoading();
     }
   });
 
@@ -62,11 +109,56 @@ function bindAuthForms() {
     const email = document.getElementById("signupEmail").value;
     const password = document.getElementById("signupPassword").value;
     const name = document.getElementById("signupName").value;
+    showLoading();
     try {
       await signUp(email, password, name, selectedAvatar);
     } catch (err) {
       showToast("登録に失敗しました");
       console.error(err);
+    } finally {
+      hideLoading();
+    }
+  });
+
+  document.getElementById("googleLoginBtn")?.addEventListener("click", async () => {
+    showLoading();
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      showToast("Googleログインに失敗しました");
+      console.error(err);
+    } finally {
+      hideLoading();
+    }
+  });
+
+  document.getElementById("googleSignupBtn")?.addEventListener("click", async () => {
+    showLoading();
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      showToast("Google登録に失敗しました");
+      console.error(err);
+    } finally {
+      hideLoading();
+    }
+  });
+
+  document.getElementById("forgotPasswordBtn")?.addEventListener("click", async () => {
+    const email = document.getElementById("loginEmail").value;
+    if (!email) {
+      showToast("メールアドレスを入力してください");
+      return;
+    }
+    showLoading();
+    try {
+      await resetPassword(email);
+      showToast("パスワード再設定メールを送信しました");
+    } catch (err) {
+      showToast("送信に失敗しました");
+      console.error(err);
+    } finally {
+      hideLoading();
     }
   });
 
@@ -74,6 +166,44 @@ function bindAuthForms() {
     stopFeedListener();
     stopSupportListener();
     await logOut();
+  });
+}
+
+/* ---------------- Profile editing ---------------- */
+
+function bindProfileForm() {
+  const editBtn = document.getElementById("editProfileBtn");
+  const profileForm = document.getElementById("profileForm");
+
+  editBtn?.addEventListener("click", async () => {
+    const { currentUserDoc } = await import("./auth.js");
+    document.getElementById("profileNameInput").value = currentUserDoc?.name || "";
+    renderProfileAvatarPicker(currentUserDoc?.icon);
+    openModal("profileModal");
+  });
+
+  profileForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("profileNameInput").value.trim();
+    if (!name) {
+      showToast("名前を入力してください");
+      return;
+    }
+    showLoading();
+    try {
+      await updateUserProfile({ name, icon: selectedProfileAvatar });
+      document.getElementById("currentUserName").textContent = name;
+      document.getElementById("currentUserIcon").textContent = selectedProfileAvatar;
+      document.getElementById("familyScreenUserName").textContent = name;
+      document.getElementById("familyScreenUserIcon").textContent = selectedProfileAvatar;
+      closeModal("profileModal");
+      showToast("プロフィールを更新しました ✓");
+    } catch (err) {
+      showToast("更新に失敗しました");
+      console.error(err);
+    } finally {
+      hideLoading();
+    }
   });
 }
 
@@ -86,6 +216,7 @@ function bindFamilyForms() {
   createForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("familyNameInput").value;
+    showLoading();
     try {
       const { inviteCode } = await createFamily(name);
       showToast(`家族を作成しました（招待コード: ${inviteCode}）`);
@@ -93,12 +224,15 @@ function bindFamilyForms() {
     } catch (err) {
       showToast("作成に失敗しました");
       console.error(err);
+    } finally {
+      hideLoading();
     }
   });
 
   joinForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = document.getElementById("inviteCodeInput").value;
+    showLoading();
     try {
       await joinFamilyByCode(code);
       showToast("家族に参加しました");
@@ -106,6 +240,8 @@ function bindFamilyForms() {
     } catch (err) {
       showToast(err.message || "参加に失敗しました");
       console.error(err);
+    } finally {
+      hideLoading();
     }
   });
 }
@@ -170,8 +306,10 @@ async function enterMainApp() {
 
   document.getElementById("currentUserName").textContent = currentUserDoc.name;
   document.getElementById("currentUserIcon").textContent = currentUserDoc.icon;
+  document.getElementById("familyScreenUserName").textContent = currentUserDoc.name;
+  document.getElementById("familyScreenUserIcon").textContent = currentUserDoc.icon;
 
-  startFeedListener(currentUserDoc.familyId);
+  startFeedListener(currentUserDoc.familyId, currentUser.uid);
   renderFamilyInfo();
 
   if (!quickLogInitialized) {
@@ -184,6 +322,7 @@ async function enterMainApp() {
 /* ---------------- Top-level auth state handler ---------------- */
 
 function handleAuthState(user, userDoc) {
+  hideLoading();
   if (!user) {
     document.getElementById("appShell").classList.add("hidden");
     document.getElementById("familyOnboarding").classList.add("hidden");
@@ -204,9 +343,11 @@ function handleAuthState(user, userDoc) {
 /* ---------------- Boot ---------------- */
 
 function boot() {
+  showLoading();
   bindGlobalUI();
   bindAuthForms();
   bindFamilyForms();
+  bindProfileForm();
   bindInviteCodeCopy();
   bindBottomNav();
   renderAvatarPicker();

@@ -23,13 +23,21 @@
 </head>
 <body>
 
+<!-- ===================== LOADING SCREEN ===================== -->
+<div id="loadingScreen" class="loading-screen loading-screen--visible">
+  <div class="loading-screen__logo">LifeFeed</div>
+  <div class="loading-screen__spinner"></div>
+</div>
+
 <!-- ===================== AUTH SCREEN ===================== -->
-<section id="authScreen" class="centered-screen">
+<section id="authScreen" class="centered-screen hidden">
   <div class="auth-card glass-card">
 
     <!-- Login panel -->
     <div id="loginPanel">
-      <h1 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-5);">LifeFeed</h1>
+      <h1 class="brand-title">LifeFeed</h1>
+      <p class="brand-subtitle">家族の毎日を、そっと見える化</p>
+
       <form id="loginForm">
         <div class="field">
           <label for="loginEmail">メールアドレス</label>
@@ -39,16 +47,26 @@
           <label for="loginPassword">パスワード</label>
           <input id="loginPassword" type="password" required autocomplete="current-password" />
         </div>
+        <button type="button" id="forgotPasswordBtn" class="link-btn">パスワードをお忘れですか？</button>
         <button type="submit" class="btn btn--primary btn--block">ログイン</button>
       </form>
-      <button id="showSignupBtn" class="btn btn--ghost btn--block" style="margin-top:var(--space-3);">
+
+      <div class="divider"><span>または</span></div>
+
+      <button id="googleLoginBtn" class="btn btn--google btn--block" type="button">
+        <span class="google-icon">G</span> Googleで続ける
+      </button>
+
+      <button id="showSignupBtn" class="btn btn--ghost btn--block" style="margin-top:var(--space-4);">
         アカウントをお持ちでない方は新規登録
       </button>
     </div>
 
     <!-- Signup panel -->
     <div id="signupPanel" class="hidden">
-      <h1 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-5);">新規登録</h1>
+      <h1 class="brand-title">新規登録</h1>
+      <p class="brand-subtitle">LifeFeedへようこそ</p>
+
       <form id="signupForm">
         <div class="field">
           <label for="signupName">お名前</label>
@@ -68,7 +86,14 @@
         </div>
         <button type="submit" class="btn btn--primary btn--block">新規登録</button>
       </form>
-      <button id="showLoginBtn" class="btn btn--ghost btn--block" style="margin-top:var(--space-3);">
+
+      <div class="divider"><span>または</span></div>
+
+      <button id="googleSignupBtn" class="btn btn--google btn--block" type="button">
+        <span class="google-icon">G</span> Googleで登録
+      </button>
+
+      <button id="showLoginBtn" class="btn btn--ghost btn--block" style="margin-top:var(--space-4);">
         すでにアカウントをお持ちの方はログイン
       </button>
     </div>
@@ -79,8 +104,8 @@
 <!-- ===================== FAMILY ONBOARDING ===================== -->
 <section id="familyOnboarding" class="centered-screen hidden">
   <div class="onboard-card glass-card">
-    <h1 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-2);">家族とつながる</h1>
-    <p style="color:var(--color-text-secondary); margin-bottom:var(--space-5);">
+    <h1 class="brand-title" style="margin-bottom:var(--space-2);">家族とつながる</h1>
+    <p class="brand-subtitle" style="margin-bottom:var(--space-5);">
       家族を作成するか、招待コードで参加してください
     </p>
 
@@ -92,11 +117,9 @@
       <button type="submit" class="btn btn--primary btn--block">家族を作成</button>
     </form>
 
-    <div style="text-align:center; color:var(--color-text-tertiary); margin-bottom:var(--space-5); font-size:var(--font-size-sm);">
-      ── または ──
-    </div>
+    <div class="divider"><span>または</span></div>
 
-    <form id="joinFamilyForm">
+    <form id="joinFamilyForm" style="margin-top:var(--space-5);">
       <div class="field">
         <label for="inviteCodeInput">招待コード</label>
         <input id="inviteCodeInput" type="text" placeholder="例：A1B2C3" required />
@@ -161,6 +184,17 @@
       <h1>家族</h1>
     </header>
 
+    <div class="section glass-card profile-card">
+      <div class="profile-card__row">
+        <span class="profile-card__icon" id="familyScreenUserIcon">🙂</span>
+        <div class="profile-card__info">
+          <p class="profile-card__name" id="familyScreenUserName">--</p>
+          <p class="profile-card__hint">プロフィールを編集できます</p>
+        </div>
+        <button id="editProfileBtn" class="btn btn--secondary btn--small" type="button">編集</button>
+      </div>
+    </div>
+
     <div class="section glass-card">
       <h2 class="section__title">家族名</h2>
       <p id="familyNameDisplay" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">--</p>
@@ -213,7 +247,7 @@
   <div class="modal__sheet">
     <div class="modal__header">
       <h2 id="logModalTitle" style="font-size:var(--font-size-lg); font-weight:700;">時間を選択</h2>
-      <button data-close-modal="logModal" aria-label="閉じる" style="font-size:22px;">✕</button>
+      <button data-close-modal="logModal" aria-label="閉じる" class="modal__close">✕</button>
     </div>
 
     <div id="logStepDuration" class="log-step log-step--active"></div>
@@ -227,7 +261,7 @@
   <div class="modal__sheet">
     <div class="modal__header">
       <h2 style="font-size:var(--font-size-lg); font-weight:700;">サポートを呼ぶ</h2>
-      <button data-close-modal="supportModal" aria-label="閉じる" style="font-size:22px;">✕</button>
+      <button data-close-modal="supportModal" aria-label="閉じる" class="modal__close">✕</button>
     </div>
     <p style="color:var(--color-text-secondary); margin-bottom:var(--space-4); font-size:var(--font-size-sm);">
       今の気持ちを家族にそっと伝えましょう
@@ -236,6 +270,38 @@
 
     <h3 class="section__title">最近のお知らせ</h3>
     <ul id="supportIncomingList"></ul>
+  </div>
+</div>
+
+<!-- ===================== PROFILE EDIT MODAL ===================== -->
+<div id="profileModal" class="modal">
+  <div class="modal__sheet">
+    <div class="modal__header">
+      <h2 style="font-size:var(--font-size-lg); font-weight:700;">プロフィール編集</h2>
+      <button data-close-modal="profileModal" aria-label="閉じる" class="modal__close">✕</button>
+    </div>
+    <form id="profileForm">
+      <div class="field">
+        <label for="profileNameInput">お名前</label>
+        <input id="profileNameInput" type="text" required />
+      </div>
+      <div class="field">
+        <label>アイコンを選択</label>
+        <div id="profileAvatarPicker" class="avatar-picker"></div>
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">保存する</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== CONFIRM DIALOG MODAL ===================== -->
+<div id="confirmModal" class="modal">
+  <div class="modal__sheet modal__sheet--small">
+    <p id="confirmMessage" class="confirm-message">よろしいですか？</p>
+    <div class="confirm-actions">
+      <button id="confirmCancelBtn" class="btn btn--secondary" type="button">キャンセル</button>
+      <button id="confirmOkBtn" class="btn btn--danger" type="button">削除する</button>
+    </div>
   </div>
 </div>
 

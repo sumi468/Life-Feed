@@ -11,9 +11,11 @@ import {
   orderBy,
   limit,
   onSnapshot,
+  deleteDoc,
+  doc,
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { el, formatDurationJP, formatTimeJP } from "./ui.js";
+import { el, formatDurationJP, formatTimeJP, showToast, confirmAction } from "./ui.js";
 import { CATEGORY_TYPES } from "./categories.js";
 
 let unsubscribeFeed = null;
@@ -31,8 +33,23 @@ function categoryColor(categoryType) {
   return found ? found.color : "var(--color-active)";
 }
 
-/** Render one feed entry as a glass card. */
-function renderFeedItem(logData) {
+/** Delete a log entry (only the owner can do this — also enforced by Firestore rules). */
+async function deleteLog(logId, itemEl) {
+  const confirmed = await confirmAction("この記録を削除しますか？");
+  if (!confirmed) return;
+  try {
+    itemEl.classList.add("feed-item--removing");
+    await deleteDoc(doc(db, "logs", logId));
+    // onSnapshot will re-render the list; no manual DOM removal needed.
+  } catch (err) {
+    itemEl.classList.remove("feed-item--removing");
+    console.error(err);
+    showToast("削除に失敗しました");
+  }
+}
+
+/** Render one feed entry as a glass card. Adds a delete button for the owner's own entries. */
+function renderFeedItem(logId, logData, currentUserId) {
   const item = el("li", "feed-item");
   item.style.setProperty("--accent", categoryColor(logData.categoryType));
 
@@ -52,11 +69,23 @@ function renderFeedItem(logData) {
 
   body.append(top, detail);
   item.append(avatar, body);
+
+  // Only the entry's owner may delete it.
+  if (logData.userId === currentUserId) {
+    const deleteBtn = el("button", "feed-item__delete", "✕");
+    deleteBtn.setAttribute("aria-label", "削除する");
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deleteLog(logId, item);
+    });
+    item.appendChild(deleteBtn);
+  }
+
   return item;
 }
 
 /** Subscribe to today's logs for the user's family and render them live. */
-export function startFeedListener(familyId) {
+export function startFeedListener(familyId, currentUserId) {
   stopFeedListener();
   const logsRef = collection(db, "logs");
   const q = query(
@@ -75,7 +104,7 @@ export function startFeedListener(familyId) {
     }
     feedEmptyEl.classList.add("hidden");
     snapshot.forEach((docSnap) => {
-      feedListEl.appendChild(renderFeedItem(docSnap.data()));
+      feedListEl.appendChild(renderFeedItem(docSnap.id, docSnap.data(), currentUserId));
     });
   });
 }

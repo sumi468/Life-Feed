@@ -79,6 +79,46 @@ export function generateInviteCode() {
   return code;
 }
 
+/** Show the full-screen loading overlay. */
+export function showLoading() {
+  document.getElementById("loadingScreen")?.classList.add("loading-screen--visible");
+}
+
+/** Hide the full-screen loading overlay. */
+export function hideLoading() {
+  document.getElementById("loadingScreen")?.classList.remove("loading-screen--visible");
+}
+
+/**
+ * Lightweight confirm dialog using the support/log modal pattern.
+ * Returns a Promise<boolean> resolved by the user's choice.
+ */
+export function confirmAction(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirmModal");
+    const text = document.getElementById("confirmMessage");
+    const okBtn = document.getElementById("confirmOkBtn");
+    const cancelBtn = document.getElementById("confirmCancelBtn");
+    if (!modal || !text || !okBtn || !cancelBtn) {
+      resolve(window.confirm(message));
+      return;
+    }
+    text.textContent = message;
+    openModal("confirmModal");
+
+    const cleanup = (result) => {
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      closeModal("confirmModal");
+      resolve(result);
+    };
+    const onOk = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+  });
+}
+
 /** Wire up generic [data-close-modal] and [data-nav-target] buttons once at startup. */
 export function bindGlobalUI() {
   document.querySelectorAll("[data-close-modal]").forEach((btn) => {

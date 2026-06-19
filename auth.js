@@ -6,6 +6,9 @@ import { auth, db } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -26,6 +29,7 @@ export let currentUser = null; // Firebase auth user
 export let currentUserDoc = null; // Firestore users/{uid} data (includes familyId)
 
 const AVATAR_ICONS = ["👨", "👩", "👦", "👧", "🧑", "👴", "👵"];
+const googleProvider = new GoogleAuthProvider();
 
 /** Sign up a new account with email/password + display name + avatar icon. */
 export async function signUp(email, password, name, icon) {
@@ -46,9 +50,44 @@ export async function logIn(email, password) {
   return cred.user;
 }
 
+/**
+ * Sign in (or sign up, transparently) with Google.
+ * If this is the user's first time, create their users/{uid} profile doc.
+ */
+export async function signInWithGoogle() {
+  const cred = await signInWithPopup(auth, googleProvider);
+  const userRef = doc(db, "users", cred.user.uid);
+  const existing = await getDoc(userRef);
+  if (!existing.exists()) {
+    await setDoc(userRef, {
+      name: cred.user.displayName || "ユーザー",
+      icon: AVATAR_ICONS[0],
+      familyId: null,
+      createdAt: serverTimestamp(),
+    });
+  }
+  return cred.user;
+}
+
+/** Send a password reset email. */
+export async function resetPassword(email) {
+  await sendPasswordResetEmail(auth, email);
+}
+
 /** Log out the current user. */
 export async function logOut() {
   await signOut(auth);
+}
+
+/** Update the current user's display name and/or avatar icon. */
+export async function updateUserProfile({ name, icon }) {
+  if (!currentUser) throw new Error("ログインが必要です");
+  const updates = {};
+  if (name) updates.name = name;
+  if (icon) updates.icon = icon;
+  await setDoc(doc(db, "users", currentUser.uid), updates, { merge: true });
+  currentUserDoc = { ...currentUserDoc, ...updates };
+  return currentUserDoc;
 }
 
 /** Create a brand-new family room and attach the current user to it as a member. */
