@@ -1,0 +1,71 @@
+/* styles/variables.css — design tokens for the Apple-like glass aesthetic */
+
+:root {
+  /* Surfaces */
+  --color-bg: #f5f5f7;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-solid: #ffffff;
+  --color-border: rgba(60, 60, 67, 0.1);
+
+  /* Text */
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-text-tertiary: #98989d;
+
+  /* Accent palette */
+  --color-accent: #0a84ff;
+  --color-active: #34c759;
+  --color-passive: #ff9f0a;
+  --color-dependency: #ff453a;
+  --color-support: #5e5ce6;
+
+  /* Shadows */
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-floating: 0 12px 28px rgba(0, 0, 0, 0.14);
+
+  /* Radii */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 28px;
+  --font-size-xxl: 34px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --duration-fast: 160ms;
+  --duration-medium: 280ms;
+
+  /* Layout */
+  --max-width: 600px;
+  --nav-height: 76px;
+  --blur-strength: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #000000;
+    --color-surface: rgba(28, 28, 30, 0.7);
+    --color-surface-solid: #1c1c1e;
+    --color-border: rgba(255, 255, 255, 0.12);
+    --color-text-primary: #f5f5f7;
+    --color-text-secondary: #aeaeb2;
+    --color-text-tertiary: #8e8e93;
+  }
+}

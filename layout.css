@@ -1,0 +1,204 @@
+/* styles/layout.css — page structure, screens, nav, responsive grid */
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.app-shell {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--nav-height) + var(--space-5));
+  position: relative;
+}
+
+@media (min-width: 900px) {
+  .app-shell {
+    max-width: 760px;
+  }
+}
+
+/* Screens (feed / dashboard / family) toggle visibility via .screen--active */
+.screen {
+  display: none;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  animation: fadeIn var(--duration-medium) var(--ease-standard);
+}
+
+.screen--active {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.page-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3);
+  backdrop-filter: blur(var(--blur-strength));
+  -webkit-backdrop-filter: blur(var(--blur-strength));
+}
+
+/* Sticky bottom navigation */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: var(--nav-height);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-surface);
+  backdrop-filter: blur(var(--blur-strength));
+  -webkit-backdrop-filter: blur(var(--blur-strength));
+  border-top: 1px solid var(--color-border);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .bottom-nav {
+    max-width: 760px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+  min-height: 48px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  transition: color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+}
+
+.nav-btn__icon {
+  font-size: 22px;
+}
+
+.nav-btn--active {
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+/* Floating action buttons */
+.fab-row {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(var(--nav-height) + var(--space-4));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  z-index: 30;
+}
+
+/* Centered auth / onboarding layouts */
+.centered-screen {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+.auth-card,
+.onboard-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+/* Modal overlay */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  z-index: 50;
+  transition: background var(--duration-medium) var(--ease-standard);
+}
+
+@media (min-width: 700px) {
+  .modal {
+    align-items: center;
+  }
+}
+
+.modal--open {
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+}
+
+.body--modal-open {
+  overflow: hidden;
+}
+
+.modal__sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 86dvh;
+  overflow-y: auto;
+  background: var(--color-surface-solid);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-5);
+  transform: translateY(100%);
+  transition: transform var(--duration-medium) var(--ease-standard);
+}
+
+@media (min-width: 700px) {
+  .modal__sheet {
+    border-radius: var(--radius-lg);
+    transform: translateY(24px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+.modal--open .modal__sheet {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+/* Section / card grouping */
+.section {
+  margin-bottom: var(--space-6);
+}
+
+.section__title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  color: var(--color-text-secondary);
+}
