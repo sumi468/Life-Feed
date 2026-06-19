@@ -12,12 +12,12 @@ import {
 
 // TODO: replace with your actual Firebase project credentials
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyB3JgDDDBDFms1mYMvrVdfBixkM8GrfXQg",
+  authDomain: "life-feed-91e40.firebaseapp.com",
+  projectId: "life-feed-91e40",
+  storageBucket: "life-feed-91e40.firebasestorage.app",
+  messagingSenderId: "227281483657",
+  appId: "1:227281483657:web:8bf5c7648dd37223f79358",
 };
 
 export const app = initializeApp(firebaseConfig);
