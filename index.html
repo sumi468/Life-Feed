@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>LifeFeed - 家族のライフログ</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0a84ff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="LifeFeed" />
+<link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+<!-- Styles -->
+<link rel="stylesheet" href="/styles/reset.css" />
+<link rel="stylesheet" href="/styles/variables.css" />
+<link rel="stylesheet" href="/styles/layout.css" />
+<link rel="stylesheet" href="/styles/components.css" />
+<link rel="stylesheet" href="/styles/animations.css" />
+</head>
+<body>
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<section id="authScreen" class="centered-screen">
+  <div class="auth-card glass-card">
+
+    <!-- Login panel -->
+    <div id="loginPanel">
+      <h1 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-5);">LifeFeed</h1>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginEmail">メールアドレス</label>
+          <input id="loginEmail" type="email" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="loginPassword">パスワード</label>
+          <input id="loginPassword" type="password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--block">ログイン</button>
+      </form>
+      <button id="showSignupBtn" class="btn btn--ghost btn--block" style="margin-top:var(--space-3);">
+        アカウントをお持ちでない方は新規登録
+      </button>
+    </div>
+
+    <!-- Signup panel -->
+    <div id="signupPanel" class="hidden">
+      <h1 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-5);">新規登録</h1>
+      <form id="signupForm">
+        <div class="field">
+          <label for="signupName">お名前</label>
+          <input id="signupName" type="text" required autocomplete="name" />
+        </div>
+        <div class="field">
+          <label>アイコンを選択</label>
+          <div id="avatarPicker" class="avatar-picker"></div>
+        </div>
+        <div class="field">
+          <label for="signupEmail">メールアドレス</label>
+          <input id="signupEmail" type="email" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="signupPassword">パスワード</label>
+          <input id="signupPassword" type="password" required minlength="6" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--block">新規登録</button>
+      </form>
+      <button id="showLoginBtn" class="btn btn--ghost btn--block" style="margin-top:var(--space-3);">
+        すでにアカウントをお持ちの方はログイン
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== FAMILY ONBOARDING ===================== -->
+<section id="familyOnboarding" class="centered-screen hidden">
+  <div class="onboard-card glass-card">
+    <h1 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-2);">家族とつながる</h1>
+    <p style="color:var(--color-text-secondary); margin-bottom:var(--space-5);">
+      家族を作成するか、招待コードで参加してください
+    </p>
+
+    <form id="createFamilyForm" style="margin-bottom:var(--space-6);">
+      <div class="field">
+        <label for="familyNameInput">家族の名前</label>
+        <input id="familyNameInput" type="text" placeholder="例：山田家" required />
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">家族を作成</button>
+    </form>
+
+    <div style="text-align:center; color:var(--color-text-tertiary); margin-bottom:var(--space-5); font-size:var(--font-size-sm);">
+      ── または ──
+    </div>
+
+    <form id="joinFamilyForm">
+      <div class="field">
+        <label for="inviteCodeInput">招待コード</label>
+        <input id="inviteCodeInput" type="text" placeholder="例：A1B2C3" required />
+      </div>
+      <button type="submit" class="btn btn--secondary btn--block">参加する</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== MAIN APP SHELL ===================== -->
+<div id="appShell" class="app-shell hidden">
+
+  <!-- FEED SCREEN -->
+  <section class="screen screen--active" data-screen="feed">
+    <header class="page-header">
+      <h1>今日のライフフィード</h1>
+      <div class="user-badge">
+        <span id="currentUserIcon">🙂</span>
+        <span id="currentUserName" style="font-size:var(--font-size-sm); font-weight:600;"></span>
+      </div>
+    </header>
+
+    <ul id="feedList" class="feed-list"></ul>
+    <p id="feedEmpty" class="empty-note hidden">まだ今日の記録がありません。最初の一歩を記録してみましょう。</p>
+  </section>
+
+  <!-- DASHBOARD SCREEN -->
+  <section class="screen" data-screen="dashboard">
+    <header class="page-header">
+      <h1>ダッシュボード</h1>
+    </header>
+
+    <div class="section">
+      <div class="stat-grid" id="statGrid"></div>
+    </div>
+
+    <div class="section glass-card">
+      <h2 class="section__title">今日のバランス</h2>
+      <div class="balance-bar" id="balanceBar"></div>
+      <p id="balanceLabel" style="font-size:var(--font-size-sm); color:var(--color-text-secondary);"></p>
+    </div>
+
+    <div class="section glass-card">
+      <h2 class="section__title">受動的な活動の内訳</h2>
+      <ul id="passiveBreakdownList"></ul>
+    </div>
+
+    <div class="section glass-card">
+      <h2 class="section__title">昨日との比較</h2>
+      <div id="compareList"></div>
+    </div>
+
+    <div class="section glass-card">
+      <h2 class="section__title">継続記録</h2>
+      <div id="streakList" class="streak-list"></div>
+    </div>
+  </section>
+
+  <!-- FAMILY / SETTINGS SCREEN -->
+  <section class="screen" data-screen="family">
+    <header class="page-header">
+      <h1>家族</h1>
+    </header>
+    <div class="section glass-card">
+      <p style="margin-bottom:var(--space-4); color:var(--color-text-secondary);">
+        アカウント設定とログアウト
+      </p>
+      <button id="logoutBtn" class="btn btn--secondary btn--block">ログアウト</button>
+    </div>
+  </section>
+
+  <!-- Floating action buttons (record + support) -->
+  <div class="fab-row">
+    <button id="supportFab" class="fab fab--support" aria-label="サポートを呼ぶ">🆘</button>
+    <button id="quickLogFab" class="fab fab--primary" aria-label="記録する">＋</button>
+  </div>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn nav-btn--active" data-nav-target="feed">
+      <span class="nav-btn__icon">🏠</span>
+      <span>フィード</span>
+    </button>
+    <button class="nav-btn" data-nav-target="dashboard">
+      <span class="nav-btn__icon">📊</span>
+      <span>ダッシュボード</span>
+    </button>
+    <button class="nav-btn" data-nav-target="family">
+      <span class="nav-btn__icon">👪</span>
+      <span>家族</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ===================== QUICK LOG MODAL ===================== -->
+<div id="logModal" class="modal">
+  <div class="modal__sheet">
+    <div class="modal__header">
+      <h2 id="logModalTitle" style="font-size:var(--font-size-lg); font-weight:700;">時間を選択</h2>
+      <button data-close-modal="logModal" aria-label="閉じる" style="font-size:22px;">✕</button>
+    </div>
+
+    <div id="logStepDuration" class="log-step log-step--active"></div>
+    <div id="logStepCategory" class="log-step"></div>
+    <div id="logStepDetail" class="log-step"></div>
+  </div>
+</div>
+
+<!-- ===================== SUPPORT MODAL ===================== -->
+<div id="supportModal" class="modal">
+  <div class="modal__sheet">
+    <div class="modal__header">
+      <h2 style="font-size:var(--font-size-lg); font-weight:700;">サポートを呼ぶ</h2>
+      <button data-close-modal="supportModal" aria-label="閉じる" style="font-size:22px;">✕</button>
+    </div>
+    <p style="color:var(--color-text-secondary); margin-bottom:var(--space-4); font-size:var(--font-size-sm);">
+      今の気持ちを家族にそっと伝えましょう
+    </p>
+    <div id="supportOptions" class="support-options"></div>
+
+    <h3 class="section__title">最近のお知らせ</h3>
+    <ul id="supportIncomingList"></ul>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- App entry point (ES module) -->
+<script type="module" src="/scripts/app.js"></script>
+</body>
+</html>
