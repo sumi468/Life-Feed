@@ -4,7 +4,7 @@
 
 import { db } from "./firebase-config.js";
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { DURATIONS, CATEGORY_TYPES, CATEGORY_DETAILS } from "../data/categories.js";
+import { DURATIONS, CATEGORY_TYPES, CATEGORY_DETAILS } from "./categories.js";
 import { el, showToast, closeModal, openModal } from "./ui.js";
 import { currentUser, currentUserDoc } from "./auth.js";
 

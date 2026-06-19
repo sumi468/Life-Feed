@@ -14,7 +14,7 @@ import {
   serverTimestamp,
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { SUPPORT_OPTIONS } from "../data/categories.js";
+import { SUPPORT_OPTIONS } from "./categories.js";
 import { el, showToast, openModal, closeModal, formatTimeJP } from "./ui.js";
 import { currentUser, currentUserDoc } from "./auth.js";
 

@@ -14,7 +14,7 @@ import {
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { el, formatDurationJP, formatTimeJP } from "./ui.js";
-import { CATEGORY_TYPES } from "../data/categories.js";
+import { CATEGORY_TYPES } from "./categories.js";
 
 let unsubscribeFeed = null;
 const feedListEl = document.getElementById("feedList");

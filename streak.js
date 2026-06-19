@@ -16,7 +16,7 @@ import {
   orderBy,
   limit,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { STREAKS } from "../data/categories.js";
+import { STREAKS } from "./categories.js";
 import { el } from "./ui.js";
 
 function dateKey(date) {
