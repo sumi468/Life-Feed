@@ -2,7 +2,7 @@
 // Application entry point. Wires together auth state, screen routing,
 // and initializes feature modules (feed, log, dashboard, streak, support).
 
-import { onAuthReady, signUp, logIn, logOut, createFamily, joinFamilyByCode, AVATAR_ICONS } from "./auth.js";
+import { onAuthReady, signUp, logIn, logOut, createFamily, joinFamilyByCode, getFamily, AVATAR_ICONS } from "./auth.js";
 import { startFeedListener, stopFeedListener } from "./feed.js";
 import { initQuickLog } from "./log.js";
 import { renderDashboard } from "./dashboard.js";
@@ -120,6 +120,9 @@ function bindBottomNav() {
       if (target === "dashboard") {
         await refreshDashboardAndStreaks();
       }
+      if (target === "family") {
+        await renderFamilyInfo();
+      }
     });
   });
 }
@@ -129,6 +132,30 @@ async function refreshDashboardAndStreaks() {
   if (!currentUserDoc?.familyId) return;
   await renderDashboard(currentUserDoc.familyId);
   await renderStreaks(currentUser.uid);
+}
+
+/** Fetch and display the family name + invite code on the family screen. */
+async function renderFamilyInfo() {
+  const { currentUserDoc } = await import("./auth.js");
+  if (!currentUserDoc?.familyId) return;
+  const family = await getFamily(currentUserDoc.familyId);
+  if (!family) return;
+  document.getElementById("familyNameDisplay").textContent = family.name || "--";
+  document.getElementById("inviteCodeDisplay").textContent = family.inviteCode || "------";
+}
+
+function bindInviteCodeCopy() {
+  document.getElementById("copyInviteCodeBtn")?.addEventListener("click", async () => {
+    const code = document.getElementById("inviteCodeDisplay").textContent;
+    if (!code || code === "------") return;
+    try {
+      await navigator.clipboard.writeText(code);
+      showToast("招待コードをコピーしました ✓");
+    } catch (err) {
+      showToast("コピーに失敗しました");
+      console.error(err);
+    }
+  });
 }
 
 /* ---------------- Main app bootstrap once family is known ---------------- */
@@ -145,6 +172,7 @@ async function enterMainApp() {
   document.getElementById("currentUserIcon").textContent = currentUserDoc.icon;
 
   startFeedListener(currentUserDoc.familyId);
+  renderFamilyInfo();
 
   if (!quickLogInitialized) {
     initQuickLog();
@@ -179,6 +207,7 @@ function boot() {
   bindGlobalUI();
   bindAuthForms();
   bindFamilyForms();
+  bindInviteCodeCopy();
   bindBottomNav();
   renderAvatarPicker();
   onAuthReady(handleAuthState);

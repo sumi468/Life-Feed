@@ -160,6 +160,23 @@
     <header class="page-header">
       <h1>家族</h1>
     </header>
+
+    <div class="section glass-card">
+      <h2 class="section__title">家族名</h2>
+      <p id="familyNameDisplay" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">--</p>
+    </div>
+
+    <div class="section glass-card">
+      <h2 class="section__title">招待コード</h2>
+      <p style="color:var(--color-text-secondary); font-size:var(--font-size-sm); margin-bottom:var(--space-3);">
+        このコードを家族に伝えると参加できます
+      </p>
+      <div style="display:flex; align-items:center; gap:var(--space-3);">
+        <span id="inviteCodeDisplay" style="font-size:var(--font-size-xl); font-weight:700; letter-spacing:0.1em; color:var(--color-accent); flex:1;">------</span>
+        <button id="copyInviteCodeBtn" class="btn btn--secondary">コピー</button>
+      </div>
+    </div>
+
     <div class="section glass-card">
       <p style="margin-bottom:var(--space-4); color:var(--color-text-secondary);">
         アカウント設定とログアウト
