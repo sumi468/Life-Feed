@@ -2,7 +2,7 @@
 // Minimal offline app-shell caching. Firestore/Auth calls go to the network
 // as usual (not cached) — this only ensures the static shell loads offline.
 
-const CACHE_NAME = "lifefeed-shell-v2";
+const CACHE_NAME = "lifefeed-shell-v3";
 // Paths are relative to the service worker's own scope so this works
 // whether the app is hosted at the domain root or under a subpath
 // (e.g. GitHub Pages: https://user.github.io/lifefeed/).
@@ -64,5 +64,21 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+  );
+});
+
+// Tapping a notification (e.g. an incoming SOS support request) focuses an
+// already-open LifeFeed tab, or opens a new one if none is open.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "./index.html";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+    })
   );
 });

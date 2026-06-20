@@ -1,6 +1,9 @@
 // scripts/support.js
 // Emergency support button: lets a user broadcast a quick request to their family
 // (e.g. "話したい") and shows incoming requests from family members in realtime.
+// New requests from OTHER family members also trigger a native OS notification
+// (via the Service Worker) so they show up in the phone's notification center,
+// not just inside the open app.
 
 import { db } from "./firebase-config.js";
 import {
@@ -19,6 +22,7 @@ import { el, showToast, openModal, closeModal, formatTimeJP } from "./ui.js";
 import { currentUser, currentUserDoc } from "./auth.js";
 
 let unsubscribeSupport = null;
+let isFirstSupportSnapshot = true; // avoid notifying for requests that already existed before this session
 
 /** Build the option grid inside the support modal. */
 function renderSupportOptions() {
@@ -70,9 +74,43 @@ function renderIncomingItem(req) {
   return item;
 }
 
+/** Ask the browser for notification permission (call once, after the user is settled in the app). */
+export async function requestNotificationPermission() {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  const result = await Notification.requestPermission();
+  return result === "granted";
+}
+
+/**
+ * Show a native OS notification for an incoming support request.
+ * Routed through the Service Worker registration so it lands in the
+ * phone/desktop notification center (works even if the tab is backgrounded).
+ */
+async function notifySupportRequest(req) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  if (!("serviceWorker" in navigator)) return;
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    await registration.showNotification("LifeFeed - サポート要請", {
+      body: `${req.userName || "家族"} さんが「${req.label}」と伝えています`,
+      icon: "./icon-192.png",
+      badge: "./icon-192.png",
+      tag: "lifefeed-support", // collapse rapid repeats into one notification
+      vibrate: [120, 60, 120],
+      data: { url: "./index.html" },
+    });
+  } catch (err) {
+    console.warn("Notification failed:", err);
+  }
+}
+
 /** Listen for recent (last few) support requests within the family, newest first. */
 function listenForIncomingSupport(familyId) {
   if (unsubscribeSupport) unsubscribeSupport();
+  isFirstSupportSnapshot = true;
   const reqRef = collection(db, "support_requests");
   const q = query(
     reqRef,
@@ -82,13 +120,28 @@ function listenForIncomingSupport(familyId) {
   );
   unsubscribeSupport = onSnapshot(q, (snap) => {
     const list = document.getElementById("supportIncomingList");
-    if (!list) return;
-    list.innerHTML = "";
-    if (snap.empty) {
-      list.appendChild(el("li", "empty-note", "現在、サポートのお知らせはありません"));
-      return;
+    if (list) {
+      list.innerHTML = "";
+      if (snap.empty) {
+        list.appendChild(el("li", "empty-note", "現在、サポートのお知らせはありません"));
+      } else {
+        snap.forEach((d) => list.appendChild(renderIncomingItem(d.data())));
+      }
     }
-    snap.forEach((d) => list.appendChild(renderIncomingItem(d.data())));
+
+    // Notify on newly-added requests from other family members (skip the
+    // very first snapshot so we don't re-notify for older existing requests).
+    if (!isFirstSupportSnapshot) {
+      snap.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const req = change.doc.data();
+          if (req.userId !== currentUser?.uid) {
+            notifySupportRequest(req);
+          }
+        }
+      });
+    }
+    isFirstSupportSnapshot = false;
   });
 }
 
@@ -97,6 +150,7 @@ export function initSupport(familyId) {
   renderSupportOptions();
   const trigger = document.getElementById("supportFab");
   trigger.addEventListener("click", () => openModal("supportModal"));
+  requestNotificationPermission();
   if (familyId) listenForIncomingSupport(familyId);
 }
 
