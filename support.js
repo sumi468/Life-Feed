@@ -149,8 +149,12 @@ function listenForIncomingSupport(familyId) {
 export function initSupport(familyId) {
   renderSupportOptions();
   const trigger = document.getElementById("supportFab");
-  trigger.addEventListener("click", () => openModal("supportModal"));
-  requestNotificationPermission();
+  // Request permission inside the click handler — this is a real user
+  // gesture, which browsers require before showing the permission dialog.
+  trigger.addEventListener("click", async () => {
+    await requestNotificationPermission();
+    openModal("supportModal");
+  });
   if (familyId) listenForIncomingSupport(familyId);
 }
 
